@@ -2,6 +2,8 @@ package com.yao.nio;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -23,6 +25,11 @@ public class NIOServer {
     private static String USER_CONTENT_SPILIT = "#@#";
 
     private Charset charset = Charset.forName("UTF-8");
+
+    public static void main(String[] args) throws IOException {
+        NIOServer nioServer = new NIOServer(8080);
+        nioServer.listener();
+    }
 
     public NIOServer(int port) throws IOException {
         this.port = port;
@@ -61,6 +68,7 @@ public class NIOServer {
     public void process(SelectionKey selectionKey) throws IOException {
 
         //判断客户端确定已经进入服务大厅宁琼恩已经连接好，可以实现交互了
+        //表示有新的连接
         if (selectionKey.isAcceptable()){
             ServerSocketChannel server = (ServerSocketChannel)selectionKey.channel();
             SocketChannel client = server.accept();
@@ -73,6 +81,14 @@ public class NIOServer {
         }
         //可以读的时候
         if (selectionKey.isReadable()){
+            //通过key反向获取channel
+            SocketChannel channel = (SocketChannel) selectionKey.channel();
+            ByteBuffer readBuf = ByteBuffer.allocate(1024);
+            //获取该channel关联的buffer
+            ByteBuffer buffer = (ByteBuffer) selectionKey.attachment();
+            buffer.flip();
+            channel.read(buffer);
+            System.out.println("客户端收到消息：" + new String(buffer.array()));
 
         }
     }
