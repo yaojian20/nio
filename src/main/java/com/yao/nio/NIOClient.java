@@ -27,9 +27,10 @@ public class NIOClient {
     private static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) throws Exception {
-        init();
-        new Thread(() -> write()).start();
-        new Thread(() -> read()).start();
+        NIOClient nioClient = new NIOClient();
+        nioClient.init();
+        new Thread(() -> nioClient.write()).start();
+        new Thread(() -> nioClient.read()).start();
 
     }
 
@@ -38,7 +39,7 @@ public class NIOClient {
      *
      * @throws IOException
      */
-    private static void write() {
+    private void write() {
 
         while (connected) {
             try {
@@ -70,14 +71,14 @@ public class NIOClient {
         }
     }
 
-    private static Selector selector;
+    private Selector selector;
 
     /**
      * 初始化连接服务器
      *
      * @throws IOException
      */
-    private static void init() throws IOException {
+    private void init() throws IOException {
         //打开socket通道
         SocketChannel sc = SocketChannel.open();
         //设置非阻塞
@@ -95,7 +96,7 @@ public class NIOClient {
      *
      * @throws IOException
      */
-    private static void read() {
+    private void read() {
 
         while (connected) {
             try {
@@ -139,7 +140,7 @@ public class NIOClient {
      * @param key
      * @throws IOException
      */
-    private static void sendMessage(SelectionKey key) {
+    private void sendMessage(SelectionKey key) {
         SocketChannel channel = (SocketChannel) key.channel();
         try {
             String requestLine = scanner.nextLine();
@@ -163,7 +164,7 @@ public class NIOClient {
      * @param key
      * @throws IOException
      */
-    private static void getMessage(SelectionKey key) throws IOException {
+    private void getMessage(SelectionKey key) throws IOException {
         SocketChannel channel = (SocketChannel) key.channel();
         ByteBuffer buffer = ByteBuffer.allocate(1024);
         //清空缓存数据

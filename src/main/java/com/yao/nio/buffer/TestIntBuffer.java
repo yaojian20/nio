@@ -19,7 +19,8 @@ public class TestIntBuffer {
         //写模式转变为都模式，下标从0开始
         //也就是说调用flip()之后，读/写指针position指到缓冲区头部，并且设置了最多只能读出之前写入的数据长度(而不是整个缓存的容量大小)。
         intBuffer.flip();
-        intBuffer.put(1,100);
+        //因为上面调用了flip方法，固定了buffer的操作范围，所以下面的put是不生效的
+        intBuffer.put(100);
         while (intBuffer.hasRemaining()){
             System.out.println(intBuffer.get());
         }
