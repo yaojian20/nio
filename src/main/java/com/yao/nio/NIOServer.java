@@ -20,7 +20,7 @@ public class NIOServer {
 
     /**
      * nio最重要的四个部分Buffer, channel, selector, charset
-     * Buffer:即缓冲区，读写的数据都放在缓冲区中
+     * Buffer:即缓冲区，读写的数据都放在缓冲区中(数组的封装)
      * channel:通道 负责和缓冲区配合读写数据
      * selector: 选择器 负责监控通道中的IO情况 通过调用Selector.open()方法创建一个Selector。
      */

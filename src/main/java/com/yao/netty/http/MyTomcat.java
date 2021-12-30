@@ -1,21 +1,19 @@
-package com.yao.netty;
+package com.yao.netty.http;
 
-import io.netty.bootstrap.Bootstrap;
+import com.yao.netty.NettyServer;
+import com.yao.netty.ServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.http.HttpResponseDecoder;
-import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.codec.http.*;
 
 /**
- * Created by yaojian on 2021/12/30 14:47
- *
- * @author
+ * @author yaojian
+ * @date 2021/12/30 23:05
  */
-public class NettyServer {
-
+public class MyTomcat {
     //创建线程组，监听客户端请求
     private EventLoopGroup acceptGroup;
 
@@ -29,13 +27,13 @@ public class NettyServer {
     private Integer port;
 
     public static void main(String[] args){
-        NettyServer nettyServer = new NettyServer(9090);
+        NettyServer nettyServer = new NettyServer(8080);
         ChannelFuture future = null;
         try {
-            future = nettyServer.handle(new ServerHandler());
+            future = nettyServer.handle(new TomcatHandler());
             System.out.println("server started.");
             //关闭连接，回收资源
-            future.channel().closeFuture();
+            future.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
@@ -52,7 +50,7 @@ public class NettyServer {
         }
     }
 
-    public NettyServer(Integer port) {
+    public MyTomcat(Integer port) {
         this.port = port;
         acceptGroup = new NioEventLoopGroup();
         handleGroup = new NioEventLoopGroup();
@@ -66,9 +64,9 @@ public class NettyServer {
         //设置发送消息缓冲区大小
         bootstrap.option(ChannelOption.SO_SNDBUF, 16*1024)
                 //设置接收消息缓冲区大小
-                 .option(ChannelOption.SO_RCVBUF, 16*1024)
+                .option(ChannelOption.SO_RCVBUF, 16*1024)
                 //是否保持心跳监听
-                 .option(ChannelOption.SO_KEEPALIVE, true);
+                .option(ChannelOption.SO_KEEPALIVE, true);
 
     }
 
@@ -87,10 +85,10 @@ public class NettyServer {
             @Override
             protected void initChannel(SocketChannel socketChannel) throws Exception {
                 //无锁化串行编程
-                //编码器
-                socketChannel.pipeline().addLast(new HttpResponseEncoder());
-                //解码器
-                socketChannel.pipeline().addLast(new HttpResponseDecoder());
+//HTTP解码器可能会将一个HTTP请求解析成多个消息对象。
+                socketChannel.pipeline().addLast(new HttpServerCodec());
+                //HttpObjectAggregator 将多个消息转换为单一的一个FullHttpRequest
+                socketChannel.pipeline().addLast(new HttpObjectAggregator(Short.MAX_VALUE));
                 //业务逻辑
                 socketChannel.pipeline().addLast(acceptorHandlers);
             }
