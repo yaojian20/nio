@@ -27,7 +27,7 @@ public class MyTomcat {
     private Integer port;
 
     public static void main(String[] args){
-        NettyServer nettyServer = new NettyServer(8080);
+        MyTomcat nettyServer = new MyTomcat(8888);
         ChannelFuture future = null;
         try {
             future = nettyServer.handle(new TomcatHandler());
@@ -47,6 +47,52 @@ public class MyTomcat {
             if (nettyServer != null){
                 nettyServer.release();
             }
+        }
+    }
+
+    public void test(){
+        int port = 8888;
+        //Netty封装了NIO，Reactor模型，Boss，worker
+// Boss线程
+        EventLoopGroup bossGroup = new NioEventLoopGroup();
+// Worker线程
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        try {
+            // Netty服务
+            //ServetBootstrap   ServerSocketChannel
+            ServerBootstrap server = new ServerBootstrap();
+            // 链路式编程
+            server.group(bossGroup, workerGroup)
+                    // 主线程处理类,看到这样的写法，底层就是用反射
+                    .channel(NioServerSocketChannel.class)
+                    // 子线程处理类 , Handler
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        // 客户端初始化处理
+                        protected void initChannel(SocketChannel client) throws Exception {
+                            // 无锁化串行编程
+                            //Netty对HTTP协议的封装，顺序有要求
+                            // HttpResponseEncoder 编码器
+                            client.pipeline().addLast(new HttpResponseEncoder());
+                            // HttpRequestDecoder 解码器
+                            client.pipeline().addLast(new HttpRequestDecoder());
+                            // 业务逻辑处理
+                            client.pipeline().addLast(new TomcatHandler());
+                        }
+                    })
+                    // 针对主线程的配置 分配线程最大数量 128
+                    .option(ChannelOption.SO_BACKLOG, 128)
+                    // 针对子线程的配置 保持长连接
+                    .childOption(ChannelOption.SO_KEEPALIVE, true);
+            // 启动服务器
+            ChannelFuture f = server.bind(port).sync();
+            System.out.println("Tomcat 已启动，监听的端口是：" + port);
+            f.channel().closeFuture().sync();
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            // 关闭线程池
+            bossGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully();
         }
     }
 
@@ -83,14 +129,16 @@ public class MyTomcat {
         //SocketChannel负责读写操作
         bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
             @Override
-            protected void initChannel(SocketChannel socketChannel) throws Exception {
-                //无锁化串行编程
-//HTTP解码器可能会将一个HTTP请求解析成多个消息对象。
-                socketChannel.pipeline().addLast(new HttpServerCodec());
-                //HttpObjectAggregator 将多个消息转换为单一的一个FullHttpRequest
-                socketChannel.pipeline().addLast(new HttpObjectAggregator(Short.MAX_VALUE));
+            protected void initChannel(SocketChannel client) throws Exception {
+// 无锁化串行编程
+                //Netty对HTTP协议的封装，顺序有要求
+                // HttpResponseEncoder 编码器
+                client.pipeline().addLast(new HttpResponseEncoder());
+                // HttpRequestDecoder 解码器
+                client.pipeline().addLast(new HttpRequestDecoder());
+                // 业务逻辑处理
                 //业务逻辑
-                socketChannel.pipeline().addLast(acceptorHandlers);
+                client.pipeline().addLast(acceptorHandlers);
             }
         });
         /**

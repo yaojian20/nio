@@ -24,6 +24,7 @@ public class MyResponse {
 
     public void write(String out) throws UnsupportedEncodingException {
         try {
+            if (null == out) return;
             System.out.println("begin write!!!!!!!!!!!!!!!!");
             FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
                     HttpResponseStatus.OK, Unpooled.wrappedBuffer(out.getBytes("UTF-8")));

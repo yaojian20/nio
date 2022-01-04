@@ -6,6 +6,7 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 
@@ -87,10 +88,10 @@ public class NettyServer {
             @Override
             protected void initChannel(SocketChannel socketChannel) throws Exception {
                 //无锁化串行编程
-                //编码器
-                socketChannel.pipeline().addLast(new HttpResponseEncoder());
-                //解码器
-                socketChannel.pipeline().addLast(new HttpResponseDecoder());
+                // HttpResponseEncoder 编码器
+                //socketChannel.pipeline().addLast(new HttpResponseEncoder());
+                // HttpRequestDecoder 解码器
+                //socketChannel.pipeline().addLast(new HttpRequestDecoder());
                 //业务逻辑
                 socketChannel.pipeline().addLast(acceptorHandlers);
             }

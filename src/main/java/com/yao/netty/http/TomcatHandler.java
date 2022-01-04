@@ -16,7 +16,7 @@ public class TomcatHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        System.out.println(msg);
+        //System.out.println(msg);
         if (msg instanceof HttpRequest){
             System.out.println("is hhtprequest!!!!!!!!!!!!!!");
             HttpRequest request = (HttpRequest) msg;
