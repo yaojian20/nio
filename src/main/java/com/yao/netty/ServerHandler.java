@@ -6,6 +6,8 @@ package com.yao.netty;
  * @author
  */
 
+import com.alibaba.fastjson.JSON;
+import com.yao.im.MsgBody;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -15,6 +17,7 @@ import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,7 +30,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     //用来识别输入姓名
     private static final String CODE = "==||==";
 
-    private final static ChannelGroup channels = new DefaultChannelGroup(new DefaultEventExecutorGroup(1).next());
+    private static Map<String, ChannelHandlerContext> channels = new HashMap<>();
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -41,12 +44,12 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
             int index = message.indexOf(CODE);
             String name = message.substring(CODE.length(),message.length());
             System.out.println("name is :" + name);
-            if (!channels.contains(ctx.channel())){
-                channels.add(ctx.channel());
+            if (!channels.containsKey(name)){
+                channels.put(name, ctx);
                 ctx.writeAndFlush(Unpooled.copiedBuffer(name+"注册成功！", CharsetUtil.UTF_8));
             }
         } else {
-            ctx.writeAndFlush(Unpooled.copiedBuffer("已收到消息：" + message, CharsetUtil.UTF_8));
+            //ctx.writeAndFlush(Unpooled.copiedBuffer("已收到消息：" + message, CharsetUtil.UTF_8));
             sendOthers(ctx, message);
         }
 
@@ -79,14 +82,18 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     public void sendOthers(ChannelHandlerContext context, String message){
-        if (!channels.isEmpty()){
-            for (Channel channel : channels){
-                if (!context.channel().equals(channel)){
-                    channel.writeAndFlush(message);
+        MsgBody msgBody = JSON.parseObject(message, MsgBody.class);
+        String userName = msgBody.getSendUserName();
+        String msg = msgBody.getSendUserName()+":"+msgBody.getMessage();
+        channels.forEach((k, v) -> {
+            try {
+                if (!k.equals(userName)){
+                    v.writeAndFlush(Unpooled.copiedBuffer(msg, CharsetUtil.UTF_8));
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        }
-
+        });
     }
 
 }

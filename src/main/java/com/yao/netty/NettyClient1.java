@@ -1,5 +1,7 @@
 package com.yao.netty;
 
+import com.alibaba.fastjson.JSON;
+import com.yao.im.MsgBody;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -31,6 +33,8 @@ public class NettyClient1 {
 
     private Integer port;
 
+    private String userName;
+
     public static void main(String[] args) {
         NettyClient1 nettyClient = new NettyClient1("localhost",9090);
         ChannelFuture future = null;
@@ -39,10 +43,14 @@ public class NettyClient1 {
             System.out.println("欢迎来到netty世界！请输入你的昵称！");
             Scanner scanner = new Scanner(System.in);
             String name = scanner.nextLine();
+            MsgBody msgBody = new MsgBody();
+            msgBody.setSendUserName(name);
             future.channel().writeAndFlush(Unpooled.copiedBuffer((CODE+name).getBytes("UTF-8")));
             while (true){
                 String message = scanner.nextLine();
-                future.channel().writeAndFlush(Unpooled.copiedBuffer(message.getBytes("UTF-8")));
+                msgBody.setMessage(message);
+                String json = JSON.toJSONString(msgBody);
+                future.channel().writeAndFlush(Unpooled.copiedBuffer(json.getBytes("UTF-8")));
             }
         } catch (Exception e) {
             e.printStackTrace();
