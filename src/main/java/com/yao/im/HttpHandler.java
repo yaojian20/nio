@@ -12,6 +12,7 @@ import java.net.URL;
  * @author yaojian
  * @date 2022/1/4 22:14
  */
+@ChannelHandler.Sharable
 public class HttpHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     //
     private URL baseURL= HttpHandler.class.getProtectionDomain().getCodeSource().getLocation();

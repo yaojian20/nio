@@ -1,5 +1,8 @@
 package com.yao.im;
 
+import com.yao.im.util.MyProtocolDecode;
+import com.yao.im.util.MyProtocolEncode;
+import com.yao.im.util.ServerProtocolHandler;
 import com.yao.netty.ServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -20,6 +23,8 @@ import java.util.logging.SocketHandler;
  * @author
  */
 public class NettyServer {
+
+    private static final MyProtocolDecode MY_PROTOCOL_DECODE = new MyProtocolDecode();
 
     //创建线程组，监听客户端请求
     private EventLoopGroup acceptGroup;
@@ -91,14 +96,18 @@ public class NettyServer {
         bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel socketChannel) throws Exception {
-                socketChannel.pipeline().addLast(new HttpServerCodec());
-                socketChannel.pipeline().addLast(new HttpObjectAggregator(1024*16));
-                socketChannel.pipeline().addLast(new ChunkedWriteHandler());
-                socketChannel.pipeline().addLast(acceptorHandlers);
+                //socketChannel.pipeline().addLast(new HttpServerCodec());
+                //socketChannel.pipeline().addLast(new HttpObjectAggregator(1024*16));
+                //socketChannel.pipeline().addLast(new ChunkedWriteHandler());
+                //socketChannel.pipeline().addLast(acceptorHandlers);
 
                 //websocket
-                socketChannel.pipeline().addLast(new WebSocketServerProtocolHandler("/im"));
-                socketChannel.pipeline().addLast(new WebsocketHandler());
+                //socketChannel.pipeline().addLast(new WebSocketServerProtocolHandler("/im"));
+                //socketChannel.pipeline().addLast(new WebsocketHandler());
+
+                socketChannel.pipeline().addLast(new MyProtocolEncode());
+                socketChannel.pipeline().addLast(MY_PROTOCOL_DECODE);
+                socketChannel.pipeline().addLast(new ServerProtocolHandler());
             }
         });
         /**
