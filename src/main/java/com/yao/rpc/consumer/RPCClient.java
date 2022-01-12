@@ -6,13 +6,15 @@ import com.yao.rpc.core.msg.InvokerMsg;
 import com.yao.rpc.serializable.InvokeMsgDecode;
 import com.yao.rpc.serializable.InvokeMsgEncode;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 
 import javax.annotation.PreDestroy;
 
@@ -47,19 +49,22 @@ public class RPCClient {
         //
         bootstrap.channel(NioSocketChannel.class);
 
+        bootstrap.option(ChannelOption.TCP_NODELAY, true);
+
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel socketChannel) throws Exception {
                 ChannelPipeline pipeline = socketChannel.pipeline();
 
                 //处理拆包粘包的解编码器
-                //pipeline.addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE,0,4));
-                //pipeline.addLast(new LengthFieldPrepender(4));
+                //pipeline.addLast("frameDecoder",new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE,0,4));
+                //pipeline.addLast("frameDEncoder",new LengthFieldPrepender(4));
                 //处理序列化解编码器
-                //pipeline.addLast("decoder",new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(null)));
-                //pipeline.addLast("encoder",new ObjectEncoder());
-                pipeline.addLast(new InvokeMsgEncode());
-                pipeline.addLast(new InvokeMsgDecode());
+                pipeline.addLast("objectEncoder",new ObjectEncoder());
+                pipeline.addLast("objectDecoder",new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(null)));
+
+                //pipeline.addLast(new InvokeMsgEncode());
+                //pipeline.addLast(new InvokeMsgDecode());
                 pipeline.addLast(clientHandler);
             }
         });
@@ -72,10 +77,18 @@ public class RPCClient {
     }
 
     public Object send(InvokerMsg invokerMsg){
-        this.future.channel().writeAndFlush("lalalalalalala");
-        this.future.channel().writeAndFlush(invokerMsg);
-        Object result = clientHandler.getResult(invokerMsg.getRequestId());
-        //future.channel().close();
+        Object result = null;
+        try {
+            this.future.channel().writeAndFlush(invokerMsg);
+             result = clientHandler.getResult(invokerMsg.getRequestId());
+        } finally {
+            group.shutdownGracefully();
+            try {
+                future.channel().closeFuture().sync();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         return result;
     }
 

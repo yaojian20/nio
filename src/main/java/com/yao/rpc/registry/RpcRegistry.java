@@ -9,6 +9,11 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 
 /**
  * @author yaojian
@@ -17,9 +22,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 public class RpcRegistry {
 
     private int port;
-
-    private RegistryHandler registryHandler = new RegistryHandler();
-
 
     public RpcRegistry(int port){
         this.port = port;
@@ -41,22 +43,20 @@ public class RpcRegistry {
                     //pipeline.addLast(new LengthFieldPrepender(4));
 
                     //处理序列化解编码器
-                    //pipeline.addLast("encoder",new ObjectEncoder());
-                    //pipeline.addLast("decoder",new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(null)));
-                    pipeline.addLast(new InvokeMsgEncode());
-                    pipeline.addLast(new InvokeMsgDecode());
-                    pipeline.addLast(registryHandler);
+                    pipeline.addLast("encoder",new ObjectEncoder());
+                    pipeline.addLast("decoder",new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(null)));
+                    //pipeline.addLast(new InvokeMsgEncode());
+                    //pipeline.addLast(new InvokeMsgDecode());
+                    pipeline.addLast(new RegistryHandler());
 
                     //业务拓展
 
 
                 }
             });
-            b.option(ChannelOption.SO_SNDBUF, 16*1024)
-                    //设置接收消息缓冲区大小
-                    .option(ChannelOption.SO_RCVBUF, 16*1024)
+            b.option(ChannelOption.SO_BACKLOG, 128)
                     //是否保持心跳监听
-                    .option(ChannelOption.SO_KEEPALIVE, true);
+                    .childOption(ChannelOption.SO_KEEPALIVE, true);
             ChannelFuture future = b.bind(this.port).sync();
             System.out.println("注册中心启动完成！");
             future.channel().closeFuture().sync();

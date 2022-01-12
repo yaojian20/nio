@@ -12,6 +12,9 @@ import java.util.Arrays;
  */
 public class InvokerMsg implements Serializable{
 
+
+    private static final long serialVersionUID = 6632101069435972688L;
+
     public InvokerMsg() {
     }
 
