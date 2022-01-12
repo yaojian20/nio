@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  * @author
  */
 @ChannelHandler.Sharable
-public class ClientHandler extends SimpleChannelInboundHandler<InvokerMsg> {
+public class ClientHandler extends ChannelInboundHandlerAdapter {
 
     private final Map<String, Object> resultMaps = new ConcurrentHashMap<>();
 
@@ -27,10 +27,15 @@ public class ClientHandler extends SimpleChannelInboundHandler<InvokerMsg> {
     private static final Integer RETRY_MILLS = 5;
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, InvokerMsg invokerMsg) throws Exception {
-        String requestId = invokerMsg.getRequestId();
-        resultMaps.put(requestId,invokerMsg.getResult());
-        System.out.println(resultMaps);
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        System.out.println(msg.getClass());
+        if (msg instanceof  InvokerMsg){
+            InvokerMsg invokerMsg = (InvokerMsg) msg;
+            String requestId = invokerMsg.getRequestId();
+            resultMaps.put(requestId,invokerMsg.getResult());
+            System.out.println(resultMaps);
+        }
+
     }
 
     @Override

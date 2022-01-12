@@ -1,20 +1,14 @@
 package com.yao.rpc.registry;
 
-import com.yao.rpc.serializable.MyProtocolDecode;
-import com.yao.rpc.serializable.MyProtocolEncode;
+import com.yao.im.util.MyProtocolDecode;
+import com.yao.im.util.MyProtocolEncode;
+import com.yao.rpc.serializable.InvokeMsgDecode;
+import com.yao.rpc.serializable.InvokeMsgEncode;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.codec.serialization.ClassResolver;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author yaojian
@@ -49,8 +43,8 @@ public class RpcRegistry {
                     //处理序列化解编码器
                     //pipeline.addLast("encoder",new ObjectEncoder());
                     //pipeline.addLast("decoder",new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(null)));
-                    pipeline.addLast(new MyProtocolEncode());
-                    pipeline.addLast(new MyProtocolDecode());
+                    pipeline.addLast(new InvokeMsgEncode());
+                    pipeline.addLast(new InvokeMsgDecode());
                     pipeline.addLast(registryHandler);
 
                     //业务拓展

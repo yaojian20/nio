@@ -16,17 +16,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author yaojian
  * @date 2022/1/11 22:17
  */
-public class RegistryHandler extends SimpleChannelInboundHandler<InvokerMsg> {
+public class RegistryHandler extends ChannelInboundHandlerAdapter {
     public RegistryHandler() {
         scanClass("com.yao.rpc.provider");
         doRegistry();
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, InvokerMsg invokerMsg) throws Exception {
-        System.out.println("注册中心借到请求 ：" + invokerMsg.toString());
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        System.out.println("注册中心借到请求 ：" + msg.toString());
         Object result = new Object();
-        InvokerMsg request = invokerMsg;
+        InvokerMsg request = (InvokerMsg) msg;
         if (registryMap.containsKey(request.getClassName())){
             Object clazz = registryMap.get(request.getClassName());
 

@@ -16,14 +16,14 @@ import org.msgpack.MessagePack;
  */
 //编码器,将出站的数据转为byteBuf
 @ChannelHandler.Sharable
-public class MyProtocolEncode extends MessageToByteEncoder<InvokerMsg> {
+public class InvokeMsgEncode extends MessageToByteEncoder<InvokerMsg> {
     @Override
     protected void encode(ChannelHandlerContext channelHandlerContext, InvokerMsg invokerMsg, ByteBuf byteBuf) throws Exception {
-//        System.out.println("encode :" + invokerMsg.toString());
-//        MessagePack messagePack = new MessagePack();
-//        byte[] bytes = messagePack.write(invokerMsg);
-//        System.out.println("bytes is :" + bytes);
-//        byteBuf.writeBytes(bytes);
+        System.out.println("encode :" + invokerMsg.toString());
+        //MessagePack messagePack = new MessagePack();
+        //byte[] bytes = messagePack.write(invokerMsg);
+        //System.out.println("bytes is :" + bytes);
+        //byteBuf.writeBytes(new MessagePack().write(invokerMsg));
         String message = JSON.toJSONString(invokerMsg);
         System.out.println("encode message is :" + message);
         byteBuf.writeBytes(message.getBytes("utf-8"));

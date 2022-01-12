@@ -10,8 +10,10 @@ import java.util.Arrays;
  * @author yaojian
  * @date 2022/1/11 22:56
  */
-@Message
-public class InvokerMsg implements Serializable {
+public class InvokerMsg implements Serializable{
+
+    public InvokerMsg() {
+    }
 
     private String requestId;
 

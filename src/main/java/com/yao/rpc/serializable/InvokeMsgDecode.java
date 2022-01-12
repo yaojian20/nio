@@ -17,7 +17,7 @@ import java.util.List;
  * @author
  */
 //解码器，将入站的数据转化为需要的数据类型
-public class MyProtocolDecode extends ByteToMessageDecoder {
+public class InvokeMsgDecode extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf in, List<Object> out) throws Exception {
         //decode中ByteBuf要读完，且List<Object>不为空才可以
@@ -35,7 +35,7 @@ public class MyProtocolDecode extends ByteToMessageDecoder {
         //将ByteBuf读取下标移动
         in.skipBytes(in.readableBytes());
         System.out.println("message is :" + message );
-        MyProtocol myProtocol = JSON.parseObject(message,MyProtocol.class);
-        out.add(myProtocol);
+        InvokerMsg invokerMsg = JSON.parseObject(message,InvokerMsg.class);
+        out.add(invokerMsg);
     }
 }
