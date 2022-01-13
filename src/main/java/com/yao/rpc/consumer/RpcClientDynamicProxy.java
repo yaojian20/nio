@@ -1,6 +1,7 @@
 package com.yao.rpc.consumer;
 
 import com.yao.rpc.core.msg.InvokerMsg;
+import com.yao.rpc.util.NettyUtil;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -37,10 +38,11 @@ public class RpcClientDynamicProxy <T> implements InvocationHandler {
         invokerMsg.setMethodName(methodName);
         invokerMsg.setParams(parameterTypes);
         invokerMsg.setValues(args);
-        System.out.println("代理类正在处理");
+        //NettyUtil.initReceiveMsg(requestId);
         RPCClient rpcClient = new RPCClient("localhost",8088);
         rpcClient.connect();
         Object result = rpcClient.send(invokerMsg);
+        //Object result = NettyUtil.waitReceiveMsg(requestId);
         return result;
     }
 }

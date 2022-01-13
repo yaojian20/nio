@@ -39,8 +39,8 @@ public class RpcRegistry {
                 protected void initChannel(SocketChannel socketChannel) throws Exception {
                     ChannelPipeline pipeline = socketChannel.pipeline();
                     //处理拆包粘包的解编码器
-                    //pipeline.addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE,0,4));
-                    //pipeline.addLast(new LengthFieldPrepender(4));
+                    pipeline.addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE,0,4,0,4));
+                    pipeline.addLast(new LengthFieldPrepender(4));
 
                     //处理序列化解编码器
                     pipeline.addLast("encoder",new ObjectEncoder());

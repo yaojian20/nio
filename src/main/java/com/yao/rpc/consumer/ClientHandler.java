@@ -1,12 +1,17 @@
 package com.yao.rpc.consumer;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.yao.rpc.core.msg.InvokerMsg;
+import com.yao.rpc.util.NettyUtil;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -17,6 +22,14 @@ import java.util.concurrent.TimeUnit;
  */
 @ChannelHandler.Sharable
 public class ClientHandler extends ChannelInboundHandlerAdapter {
+
+    /**
+     * 响应消息缓存
+     */
+    private static Cache<String, BlockingQueue<Object>> responseMsgCache = CacheBuilder.newBuilder()
+            .maximumSize(50000)
+            .expireAfterWrite(1000, TimeUnit.SECONDS)
+            .build();
 
     private final Map<String, Object> resultMaps = new ConcurrentHashMap<>();
 
@@ -33,6 +46,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             InvokerMsg invokerMsg = (InvokerMsg) msg;
             String requestId = invokerMsg.getRequestId();
             resultMaps.put(requestId,invokerMsg.getResult());
+            //NettyUtil.setReceiveMsg(requestId,invokerMsg.getResult());
             System.out.println(resultMaps);
         }
 

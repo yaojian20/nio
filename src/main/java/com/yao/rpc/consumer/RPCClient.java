@@ -57,8 +57,8 @@ public class RPCClient {
                 ChannelPipeline pipeline = socketChannel.pipeline();
 
                 //处理拆包粘包的解编码器
-                //pipeline.addLast("frameDecoder",new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE,0,4));
-                //pipeline.addLast("frameDEncoder",new LengthFieldPrepender(4));
+                pipeline.addLast("frameDecoder",new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE,0,4,0,4));
+                pipeline.addLast("frameDEncoder",new LengthFieldPrepender(4));
                 //处理序列化解编码器
                 pipeline.addLast("objectEncoder",new ObjectEncoder());
                 pipeline.addLast("objectDecoder",new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(null)));
