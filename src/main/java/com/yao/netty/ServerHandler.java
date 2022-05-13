@@ -34,6 +34,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        System.out.println("channel id is :" + ctx.channel().id().asLongText());
         //将 msg 转成一个 ByteBuf
         //ByteBuf 是 Netty 提供的，不是 NIO 的 ByteBuffer
         ByteBuf buf = (ByteBuf) msg;
@@ -96,4 +97,10 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
         });
     }
 
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        //此方法是client端连接到server端是会触发，ctx代表连接到server的client端的ctx
+        //可以在这里用map记录连接的客户端，然后可以转发消息给他们
+        super.channelActive(ctx);
+    }
 }

@@ -17,6 +17,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        System.out.println("channel id is :" + ctx.channel().id().asLongText());
         //将 msg 转成一个 ByteBuf
         //ByteBuf 是 Netty 提供的，不是 NIO 的 ByteBuffer
         ByteBuf buf = (ByteBuf) msg;
@@ -50,4 +51,9 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        System.out.println("channel id is :" + ctx.channel().id().asLongText());
+        super.channelActive(ctx);
+    }
 }
