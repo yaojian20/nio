@@ -128,7 +128,7 @@ public class Test {
         int start = -1;//记录新插入的时间开始位于老数组的哪个下标里面
         int end = -1;//记录新插入的时间结束位于老数组的哪个下标里面
         int startFlag = 0;//记录新插入的时间开始位于老数组的哪个下标前面
-        int endFlag = 0;//记录新插入的时间结束位于老数组的哪个下标后面
+        int endFlag = 0;//记录新插入的时间结束位于老数组的哪个下标前面
         for (int i = 0; i < oldWorkMonths.size(); i++){
             if (workMonth.getStart() <= oldWorkMonths.get(i).getEnd() && workMonth.getStart() >= oldWorkMonths.get(i).getStart()){
                 start = i;
